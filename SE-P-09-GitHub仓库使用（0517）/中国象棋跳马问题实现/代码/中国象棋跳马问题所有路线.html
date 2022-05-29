@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国象棋跳马问题所有路线</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            user-select: none;
+            outline: none;
+        }
+
+        .box {
+            width: 500px;
+            border: 1px solid darkcyan;
+            margin: 20px auto;
+        }
+
+        .box h3 {
+            text-align: center;
+            background: darkcyan;
+            color: #fff;
+            letter-spacing: 3px;
+            line-height: 50px;
+        }
+
+        .box table {
+            display: block;
+            width: 400px;
+            height: 100px;
+            margin: 20px auto;
+        }
+
+        .box table td {
+            line-height: 50px;
+            padding: 0 5px;
+        }
+
+        .box table td input {
+            width: 250px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .btn {
+            width: 300px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            color: #fff;
+            background: darkcyan;
+            margin: 10px auto;
+            transition: .2s;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: rgb(0, 53, 53);
+        }
+
+        .number {
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+        }
+
+        .list_box {
+            width: 100%;
+            text-align: center;
+        }
+
+        .list {
+            line-height: 25px;
+        }
+
+        .list>span {
+            margin: 0 5px;
+            letter-spacing: 2px;
+        }
+
+        .qpAll {
+            width: 1400px;
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 auto;
+        }
+
+        .qipan {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 40px 20px;
+            background-image: url("./img/qp.png");
+            background-size: 600px;
+            background-position: bottom;
+            background-position-x: 0;
+            background-repeat: no-repeat;
+        }
+
+        .qipan_item {
+            display: block;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            background: red;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            text-align: center;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h3>中国象棋跳马问题</h3>
+        <table>
+            <tr>
+                <td>行(纵向格子数)</td>
+                <td><input class="portrait" type="number" placeholder="棋盘大小为：4×4~12×12" value="7"></td>
+            </tr>
+            <tr>
+                <td>列(横向格子数)</td>
+                <td><input class="transverse" type="number" placeholder="棋盘大小为：4×4~12×12" value="7"></td>
+            </tr>
+        </table>
+        <div class="btn">提交</div>
+    </div>
+    <div class="number"></div>
+    <div class="list_box">
+        <!-- 坐标列表 -->
+    </div>
+    <div class="qpAll">
+        <!-- 棋盘列表 -->
+    </div>
+    <script src="./js/jquery.js"></script>
+    <script>
+        // 获取提交的数据
+        let getPT = () => {
+            let portrait = $(".portrait").val(); //纵向格子数
+            let transverse = $(".transverse").val(); //横向格子数
+            if (portrait < 4 || transverse < 4) {
+                alert("棋盘太小！棋盘大小为：4×4~12×12");
+            } else if (portrait > 12 || transverse > 12) {
+                alert("棋盘太大！棋盘大小为：4×4~12×12");
+            } else {
+                return {
+                    portrait,
+                    transverse
+                }
+            }
+        }
+
+        // 跳马逻辑实现
+        let getRoute = (por, tra) => {
+            let coordinate = {
+                direction: 1, //该点方向（1-4）
+                x: 0, //该点横坐标
+                y: 0 //该点纵坐标
+            }
+            let arrys = []; //坐标数组
+            let x = 0, y = 0 //用于横纵坐标累加
+            let num = 0; //计数路线条数
+
+            arrys.push(coordinate);
+            while (1) {
+                if (arrys[arrys.length - 1].direction == 1) {
+                    x += 1;
+                    y += 2;
+                    if (x <= tra && x >= 0 && y <= por && y >= 0) {
+                        arrys.push({
+                            direction: 1,
+                            x,
+                            y
+                        });
+                        if (x == tra && y == 0) {
+                            num++;
+                            $(".number").text("总路线为（条）：" + num);
+                            let str = ``
+                            let strN = ''
+                            arrys.forEach(e => {
+                                str += `<span>(${e.x},${e.y})</span>`
+                                strN += `<span class="qipan_item" style="bottom: ${e.y * 50 - 20}px;left: ${e.x * 50 - 20}px;">${e.x},${e.y}</span>`
+                            })
+                            $(".list_box").append(`
+                                <div class="list">
+                                    ${str}
+                                </div>
+                            `)
+                            $(".qpAll").append(`
+                                <div class="qipan">
+                                    ${strN}
+                                </div>
+                            `)
+                            $(".qipan").css({
+                                "height": por * 50 + 'px',
+                                "width": tra * 50 + 'px',
+                            })
+                            // 找出一条路先后，继续吓一条路线
+                            arrys.pop();
+                            x = arrys[arrys.length - 1].x;
+                            y = arrys[arrys.length - 1].y;
+                            arrys[arrys.length - 1].direction += 1;
+                        }
+                    } else {
+                        arrys[arrys.length - 1].direction += 1;
+                        x = arrys[arrys.length - 1].x
+                        y = arrys[arrys.length - 1].y
+                    }
+                } else if (arrys[arrys.length - 1].direction == 2) {
+                    x += 2;
+                    y += 1;
+                    if (x <= tra && x >= 0 && y <= por && y >= 0) {
+                        arrys.push({
+                            direction: 1,
+                            x,
+                            y
+                        });
+                        if (x == tra && y == 0) {
+                            num++;
+                            $(".number").text("总路线为（条）：" + num);
+                            let str = ``
+                            let strN = ''
+                            arrys.forEach(e => {
+                                str += `<span>(${e.x},${e.y})</span>`
+                                strN += `<span class="qipan_item" style="bottom: ${e.y * 50 - 20}px;left: ${e.x * 50 - 20}px;">${e.x},${e.y}</span>`
+                            })
+                            $(".list_box").append(`
+                                <div class="list">
+                                    ${str}
+                                </div>
+                            `)
+                            $(".qpAll").append(`
+                                <div class="qipan">
+                                    ${strN}
+                                </div>
+                            `)
+                            $(".qipan").css({
+                                "height": por * 50 + 'px',
+                                "width": tra * 50 + 'px',
+                            })
+                            // 找出一条路先后，继续吓一条路线
+                            arrys.pop();
+                            x = arrys[arrys.length - 1].x;
+                            y = arrys[arrys.length - 1].y;
+                            arrys[arrys.length - 1].direction += 1;
+                        }
+                    } else {
+                        arrys[arrys.length - 1].direction += 1;
+                        x = arrys[arrys.length - 1].x
+                        y = arrys[arrys.length - 1].y
+                    }
+                } else if (arrys[arrys.length - 1].direction == 3) {
+                    x += 2;
+                    y -= 1;
+                    if (x <= tra && x >= 0 && y <= por && y >= 0) {
+                        arrys.push({
+                            direction: 1,
+                            x,
+                            y
+                        });
+                        if (x == tra && y == 0) {
+                            num++;
+                            $(".number").text("总路线为（条）：" + num);
+                            let str = ``
+                            let strN = ''
+                            arrys.forEach(e => {
+                                str += `<span>(${e.x},${e.y})</span>`
+                                strN += `<span class="qipan_item" style="bottom: ${e.y * 50 - 20}px;left: ${e.x * 50 - 20}px;">${e.x},${e.y}</span>`
+                            })
+                            $(".list_box").append(`
+                                <div class="list">
+                                    ${str}
+                                </div>
+                            `)
+                            $(".qpAll").append(`
+                                <div class="qipan">
+                                    ${strN}
+                                </div>
+                            `)
+                            $(".qipan").css({
+                                "height": por * 50 + 'px',
+                                "width": tra * 50 + 'px',
+                            })
+                            // 找出一条路先后，继续吓一条路线
+                            arrys.pop();
+                            x = arrys[arrys.length - 1].x;
+                            y = arrys[arrys.length - 1].y;
+                            arrys[arrys.length - 1].direction += 1;
+                        }
+                    } else {
+                        arrys[arrys.length - 1].direction += 1;
+                        x = arrys[arrys.length - 1].x
+                        y = arrys[arrys.length - 1].y
+                    }
+                } else if (arrys[arrys.length - 1].direction == 4) {
+                    if (arrys[arrys.length - 1].x == 0 && arrys[arrys.length - 1].y == 0) {
+                        break;
+                    } else {
+                        x += 1;
+                        y -= 2;
+                        if (x <= tra && x >= 0 && y <= por && y >= 0) {
+                            arrys.push({
+                                direction: 1,
+                                x,
+                                y
+                            });
+                            if (x == tra && y == 0) {
+                                num++;
+                                $(".number").text("总路线为（条）：" + num);
+                                let str = ``
+                                let strN = ''
+                                arrys.forEach(e => {
+                                    str += `<span>(${e.x},${e.y})</span>`
+                                    strN += `<span class="qipan_item" style="bottom: ${e.y * 50 - 20}px;left: ${e.x * 50 - 20}px;">${e.x},${e.y}</span>`
+                                })
+                                $(".list_box").append(`
+                                    <div class="list">
+                                        ${str}
+                                    </div>
+                                `) +
+                                    $(".qpAll").append(`
+                                    <div class="qipan">
+                                        ${strN}
+                                    </div>
+                                `)
+                                $(".qipan").css({
+                                    "height": por * 50 + 'px',
+                                    "width": tra * 50 + 'px',
+                                })
+                                // 找出一条路先后，继续吓一条路线
+                                while (1) {
+                                    arrys.pop();
+                                    x = arrys[arrys.length - 1].x;
+                                    y = arrys[arrys.length - 1].y;
+                                    if (arrys[arrys.length - 1].direction < 4) {
+                                        arrys[arrys.length - 1].direction += 1;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            x = arrys[arrys.length - 1].x;
+                            y = arrys[arrys.length - 1].y;
+                            if (arrys[arrys.length - 1].direction == 4) {
+                                while (1) {
+                                    arrys.pop();
+                                    x = arrys[arrys.length - 1].x;
+                                    y = arrys[arrys.length - 1].y;
+                                    if (arrys[arrys.length - 1].direction < 4) {
+                                        arrys[arrys.length - 1].direction += 1
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 提交事件
+        $(".btn").click(function () {
+            $(".list_box").html(" ")
+            $(".qpAll").html(" ")
+            let portrait = getPT().portrait;
+            let transition = getPT().transverse;
+            let thisarry = getRoute(portrait, transition)
+        })
+    </script>
+</body>
+
+</html>
